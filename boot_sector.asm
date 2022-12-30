@@ -7,25 +7,14 @@ mov sp, bp 		; empty stack, so sp = bp
 
 mov bx, MSG
 call print
+call print_nl
+mov dx, 0x1234
+call print_hex
+call print_nl
 
 jmp $
 
-; print string at bx register
-print:
-	pusha
-	mov ah, 0x0e	
-print_char:
-	mov al, [bx] 	; move char into al
-	cmp al, 0
-	je done_print	; stop at null terminator
-
-	int 0x10
-	add bx, 1
-	jmp print_char
-done_print:
-	popa
-	ret
-
+%include "print.asm"
 
 MSG:
 	db "hello, world!", 0
