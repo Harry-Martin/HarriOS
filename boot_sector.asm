@@ -1,19 +1,34 @@
 [org 0x7c00] 		; bios places boot sector at 0x7c00
 
-mov ah, 0x0e 		; select bios write function for video interrupt
+mov ah, 0x0e 		; select bios write function for video interrupt (tty mode)
 
-mov ebx, 0
-print_char: 		; print msg
-	mov al, [msg+ebx]
-	int 0x10
-	inc ebx
-	cmp ebx, 13 	; length of msg + 1
-	jne print_char
+mov bp, 0x8000		; setup stack
+mov sp, bp 		; empty stack, so sp = bp
+
+mov bx, MSG
+call print
 
 jmp $
 
-msg:
-	db "hello, world!"
+; print string at bx register
+print:
+	pusha
+	mov ah, 0x0e	
+print_char:
+	mov al, [bx] 	; move char into al
+	cmp al, 0
+	je done_print	; stop at null terminator
+
+	int 0x10
+	add bx, 1
+	jmp print_char
+done_print:
+	popa
+	ret
+
+
+MSG:
+	db "hello, world!", 0
 
 times 510-($-$$) db 0 	; pad with 0 bytes until 510 bytes in size
 
